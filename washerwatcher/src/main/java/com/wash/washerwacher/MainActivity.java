@@ -13,16 +13,17 @@ import java.net.*;
 import java.util.concurrent.TimeUnit;
 
 public class MainActivity extends ActionBarActivity {
+    private Socket socket;
+
+    private static final int portNumber = 5544;
+    private static final String hostName = "192.168.1.113";
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
 
-        //ugly temporary fix to see other bugs
-        StrictMode.ThreadPolicy policy;
-        policy = new StrictMode.ThreadPolicy.Builder().permitAll().build();
-        StrictMode.setThreadPolicy(policy);
+        new Thread(new ClientThread()).start();
     }
 
 
@@ -48,36 +49,15 @@ public class MainActivity extends ActionBarActivity {
 
 
     public void onClick(View v) {
-        EditText text = (EditText) findViewById(R.id.editText);
-        String value = "test";
-        value = text.getText().toString();
-        String hostName = "192.168.1.113"; //change to computer ID
-        int portNumber = 5544;
-
         try {
-            Socket transfer = new Socket(hostName, portNumber);
-            PrintWriter out =
-                    new PrintWriter(transfer.getOutputStream(), true);
-            int count=0;
+            EditText text = (EditText) findViewById(R.id.editText);
+            String value = text.getText().toString();
+            if(value == null) value = "nothing";
 
-            /*
-            progress was made. it will now send the first string a bunch of times
-            which in actuality is all I need for the real application
-            ill call it close enough
-            */
+            PrintWriter out;
+            out = new PrintWriter(socket.getOutputStream(), true);
+            out.println(value);
 
-            while(count<30) {
-                value = text.getText().toString();
-                out.println(value);
-                try{
-                TimeUnit.SECONDS.sleep(1);}
-                catch (InterruptedException ie) {
-                    System.exit(1);
-                }
-                count++;
-
-            }
-            transfer.close();
         } catch (UnknownHostException e) {
             System.err.println("Don't know about host " + hostName);
             System.exit(1);
@@ -87,4 +67,21 @@ public class MainActivity extends ActionBarActivity {
             System.exit(1);
         }
     }
+
+    class ClientThread implements Runnable {
+        //creates the socket in a separate thread
+        @Override
+        public void run(){
+            try {
+                socket = new Socket(hostName,portNumber);
+            } catch (UnknownHostException e) {
+                e.printStackTrace();
+            } catch (IOException e) {
+                e.printStackTrace();
+            }
+        }
+    }
+
+
+
 }

@@ -28,9 +28,9 @@ public class MainActivity extends ActionBarActivity {
         b.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
-                //EditText text = (EditText)findViewById(R.id.editText);
+                EditText text = (EditText)findViewById(R.id.editText);
                 String value = "test";
-                //text.getText().toString();
+                value = text.getText().toString();
                 String hostName = "192.168.1.113"; //change to computer ID
                 int portNumber = 5544;
 

@@ -10,6 +10,7 @@ import android.widget.Button;
 import android.widget.EditText;
 import java.io.*;
 import java.net.*;
+import java.util.concurrent.TimeUnit;
 
 public class MainActivity extends ActionBarActivity {
 
@@ -22,7 +23,6 @@ public class MainActivity extends ActionBarActivity {
         StrictMode.ThreadPolicy policy;
         policy = new StrictMode.ThreadPolicy.Builder().permitAll().build();
         StrictMode.setThreadPolicy(policy);
-
     }
 
 
@@ -55,11 +55,29 @@ public class MainActivity extends ActionBarActivity {
         int portNumber = 5544;
 
         try {
-            Socket echoSocket = new Socket(hostName, portNumber);
+            Socket transfer = new Socket(hostName, portNumber);
             PrintWriter out =
-                    new PrintWriter(echoSocket.getOutputStream(), true);
-            out.println(value);
-            echoSocket.close();
+                    new PrintWriter(transfer.getOutputStream(), true);
+            int count=0;
+
+            /*
+            progress was made. it will now send the first string a bunch of times
+            which in actuality is all I need for the real application
+            ill call it close enough
+            */
+
+            while(count<30) {
+                value = text.getText().toString();
+                out.println(value);
+                try{
+                TimeUnit.SECONDS.sleep(1);}
+                catch (InterruptedException ie) {
+                    System.exit(1);
+                }
+                count++;
+
+            }
+            transfer.close();
         } catch (UnknownHostException e) {
             System.err.println("Don't know about host " + hostName);
             System.exit(1);

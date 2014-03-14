@@ -23,33 +23,6 @@ public class MainActivity extends ActionBarActivity {
         policy = new StrictMode.ThreadPolicy.Builder().permitAll().build();
         StrictMode.setThreadPolicy(policy);
 
-        //getting IO to work on button press
-        Button b = (Button)findViewById(R.id.button);
-        b.setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View v) {
-                EditText text = (EditText)findViewById(R.id.editText);
-                String value = "test";
-                value = text.getText().toString();
-                String hostName = "192.168.1.113"; //change to computer ID
-                int portNumber = 5544;
-
-                try {
-                    Socket echoSocket = new Socket(hostName, portNumber);
-                    PrintWriter out =
-                            new PrintWriter(echoSocket.getOutputStream(), true);
-                    out.println(value);
-                } catch (UnknownHostException e) {
-                    System.err.println("Don't know about host " + hostName);
-                    System.exit(1);
-                } catch (IOException e) {
-                    System.err.println("Couldn't get I/O for the connection to " +
-                            hostName);
-                    System.exit(1);
-                }
-            }
-        });
-
     }
 
 
@@ -74,5 +47,26 @@ public class MainActivity extends ActionBarActivity {
     }
 
 
-    }
+    public void onClick(View v) {
+        EditText text = (EditText) findViewById(R.id.editText);
+        String value = "test";
+        value = text.getText().toString();
+        String hostName = "192.168.1.113"; //change to computer ID
+        int portNumber = 5544;
 
+        try {
+            Socket echoSocket = new Socket(hostName, portNumber);
+            PrintWriter out =
+                    new PrintWriter(echoSocket.getOutputStream(), true);
+            out.println(value);
+            echoSocket.close();
+        } catch (UnknownHostException e) {
+            System.err.println("Don't know about host " + hostName);
+            System.exit(1);
+        } catch (IOException e) {
+            System.err.println("Couldn't get I/O for the connection to " +
+                    hostName);
+            System.exit(1);
+        }
+    }
+}

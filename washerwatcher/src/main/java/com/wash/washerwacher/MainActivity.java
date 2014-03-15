@@ -3,7 +3,6 @@ package com.wash.washerwacher;
 import android.media.AudioFormat;
 import android.media.AudioRecord;
 import android.media.MediaRecorder;
-import android.os.StrictMode;
 import android.support.v7.app.ActionBarActivity;
 import android.os.Bundle;
 import android.util.Log;
@@ -109,32 +108,28 @@ public class MainActivity extends ActionBarActivity {
 
 
             short data [] = new short [bufferSize];
-
+            double average = 0;
             while(!Thread.interrupted())
             {
+                average = 0;
                 recorder.startRecording();
 
                 recorder.read(data,0,bufferSize);
 
                 recorder.stop();
-                int average = 0;
+
                 for(short s : data) {
-
-                    try {
-                        Thread.sleep(1000);
-                    } catch(InterruptedException e) {
-                        Thread.currentThread().interrupt();
-                    }
-
-                    //don't quite know what calculation to do here
-                    //this was found online but CLEARLY this doesn't work
-                    //only returns 0's
-                    //http://stackoverflow.com/questions/10579184/android-audiorecord-amplitude-reading-from-mic
                     average += Math.abs(s);
-                    String avg = Integer.toString(average);
-                    Log.i("Audio level",avg);
-                }
 
+                    //http://stackoverflow.com/questions/10579184/android-audiorecord-amplitude-reading-from-mic
+                }
+                String avg = Double.toString(average);
+                Log.i("Audio level",avg);
+                try {
+                    Thread.sleep(10);
+                } catch(InterruptedException e) {
+                    Thread.currentThread().interrupt();
+                }
             }
 
 

@@ -1,6 +1,11 @@
 package com.wash.washerwacher;
 
+import android.content.Context;
 import android.content.Intent;
+import android.hardware.Sensor;
+import android.hardware.SensorEvent;
+import android.hardware.SensorEventListener;
+import android.hardware.SensorManager;
 import android.media.AudioFormat;
 import android.media.AudioRecord;
 import android.media.MediaRecorder;
@@ -26,20 +31,32 @@ import twitter4j.TwitterFactory;
 import twitter4j.conf.ConfigurationBuilder;
 
 
-public class MainActivity extends ActionBarActivity {
-    private Socket socket;
-
-    private static final int portNumber = 5544;
-    private static final String hostName = "192.168.1.113";
+public class MainActivity extends ActionBarActivity implements SensorEventListener {
+    private Socket socket; //for network
+    private boolean mInitialized;
+    private SensorManager mSensorManager;
+    private Sensor mAccelerometer;
+    private final float NOISE = (float)2.0; //for accelerometer
+    private static final int portNumber = 5544; //for network
+    private static final String hostName = "192.168.1.113"; //for network
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
 
+        //initializing the accelerometer
+        mInitialized = false;
+        mSensorManager = (SensorManager) getSystemService(Context.SENSOR_SERVICE);
+
+        mAccelerometer = mSensorManager.getDefaultSensor(Sensor.TYPE_ACCELEROMETER);
+
+        mSensorManager.registerListener(this,mAccelerometer,SensorManager.SENSOR_DELAY_NORMAL);
+
+
         new Thread(new ClientThread()).start();
         new Thread(new AudioThread()).start();
-        new Thread(new TwitterThread()).start();
+        //new Thread(new TwitterThread()).start();
     }
 
 
@@ -67,6 +84,20 @@ public class MainActivity extends ActionBarActivity {
         super.onStop();
         Thread.currentThread().interrupt();
     }
+    public void onResume(){
+        super.onResume();
+        mSensorManager.registerListener(this,mAccelerometer,SensorManager.SENSOR_DELAY_NORMAL);
+    }
+
+    public void onPause(){
+        super.onPause();
+        //mSensorManager.unregisterListener(this);
+    }
+
+    @Override
+    public void onAccuracyChanged(Sensor sensor, int accuracy){
+        //what do I do with this!
+    }
 
     public void onClick(View v) {
         try {
@@ -88,6 +119,48 @@ public class MainActivity extends ActionBarActivity {
         }
     }
 
+   public void onSensorChanged(SensorEvent event){
+       //code to calculate change in acceleration in XYZ
+       float x = event.values[0];
+       float y = event.values[1];
+       float z = event.values[2];
+       float mLastX=0;
+       float mLastY=0;
+       float mLastZ=0;
+       if (!mInitialized){
+           mLastX = x;
+           mLastY = y;
+           mLastZ = z;
+
+           mInitialized = true;
+       } else {
+           float deltaX=(mLastX-x);
+           float deltaY=(mLastY-y);
+           float deltaZ=(mLastZ-z);
+
+           if (deltaX<NOISE) deltaX =(float)0.0;
+           if (deltaY<NOISE) deltaY =(float)0.0;
+           if (deltaZ<NOISE) deltaZ =(float)0.0;
+
+           mLastX = x;
+           mLastY = y;
+           mLastZ = z;
+
+           String logx=Float.toString(deltaX);
+           String logy=Float.toString(deltaY);
+           String logz=Float.toString(deltaZ);
+           Log.i("X "+logx+" Y "+logy+" Z ",logz);
+       }
+
+
+
+   }
+
+
+
+
+
+   //Classes Go Here
     class ClientThread implements Runnable {
         //creates the socket in a separate thread
         @Override
@@ -140,7 +213,7 @@ public class MainActivity extends ActionBarActivity {
                 String avg = Double.toString(average);
                 Log.i("Audio level",avg);
                 try {
-                    Thread.sleep(10);
+                    Thread.sleep(1000);
                 } catch(InterruptedException e) {
                     Thread.currentThread().interrupt();
                 }

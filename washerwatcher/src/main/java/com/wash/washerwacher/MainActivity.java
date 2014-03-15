@@ -15,6 +15,8 @@ import android.widget.Button;
 import android.widget.EditText;
 import java.io.*;
 import java.net.*;
+import java.text.SimpleDateFormat;
+import java.util.Date;
 import java.util.concurrent.TimeUnit;
 
 import twitter4j.Status;
@@ -36,7 +38,7 @@ public class MainActivity extends ActionBarActivity {
         setContentView(R.layout.activity_main);
 
         new Thread(new ClientThread()).start();
-        //new Thread(new AudioThread()).start();
+        new Thread(new AudioThread()).start();
         new Thread(new TwitterThread()).start();
     }
 
@@ -103,6 +105,9 @@ public class MainActivity extends ActionBarActivity {
         }
     }
     class AudioThread implements Runnable {
+        //does this thread require the presence of an sd card?...
+        //ugh. why doesn't this work on 4.0.3 and works on 4.4...
+
         private static final int RECORDER_SAMPLERATE =44100;
         private static final int RECORDER_CHANNELS = AudioFormat.CHANNEL_IN_MONO;
         private static final int RECORDER_AUDIO_ENCODING = AudioFormat.ENCODING_PCM_16BIT;
@@ -121,7 +126,6 @@ public class MainActivity extends ActionBarActivity {
             double average = 0;
             while(!Thread.interrupted())
             {
-                average = 0;
                 recorder.startRecording();
 
                 recorder.read(data,0,bufferSize);
@@ -140,6 +144,7 @@ public class MainActivity extends ActionBarActivity {
                 } catch(InterruptedException e) {
                     Thread.currentThread().interrupt();
                 }
+                average = 0;
             }
 
 
@@ -151,20 +156,23 @@ public class MainActivity extends ActionBarActivity {
 
         @Override
         public void run(){
-            //config setup
+            //config setup --keep keys secret
             ConfigurationBuilder cb = new ConfigurationBuilder();
             cb.setDebugEnabled(true)
-                    .setOAuthConsumerKey("**")
-                    .setOAuthConsumerSecret("**")
-                    .setOAuthAccessToken("**")
-                    .setOAuthAccessTokenSecret("**")
+                    .setOAuthConsumerKey("")
+                    .setOAuthConsumerSecret("")
+                    .setOAuthAccessToken("")
+                    .setOAuthAccessTokenSecret("")
                     .setUseSSL(true);
             TwitterFactory tf = new TwitterFactory(cb.build());
             Twitter twitter = tf.getInstance();
-            //and tweet
-
+            //and tweet + getting around twitter not liking duplicates
+            Date date = new Date();
+            SimpleDateFormat sdf = new SimpleDateFormat("MM/dd/yyyy h:mm:ss a");
+            String formattedDate = sdf.format(date);
+            String strUsr = "jgiesler";
             try {
-                Status status = twitter.updateStatus("@jgiesler your laundry is done");
+                Status status = twitter.updateStatus("@"+strUsr+" your laundry is done "+formattedDate);
             } catch (TwitterException e) {
                 e.printStackTrace();
             }

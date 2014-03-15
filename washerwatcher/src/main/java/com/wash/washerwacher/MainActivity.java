@@ -1,8 +1,10 @@
 package com.wash.washerwacher;
 
+import android.content.Intent;
 import android.media.AudioFormat;
 import android.media.AudioRecord;
 import android.media.MediaRecorder;
+import android.net.Uri;
 import android.support.v7.app.ActionBarActivity;
 import android.os.Bundle;
 import android.util.Log;
@@ -14,6 +16,13 @@ import android.widget.EditText;
 import java.io.*;
 import java.net.*;
 import java.util.concurrent.TimeUnit;
+
+import twitter4j.Status;
+import twitter4j.Twitter;
+import twitter4j.TwitterException;
+import twitter4j.TwitterFactory;
+import twitter4j.conf.ConfigurationBuilder;
+
 
 public class MainActivity extends ActionBarActivity {
     private Socket socket;
@@ -27,7 +36,8 @@ public class MainActivity extends ActionBarActivity {
         setContentView(R.layout.activity_main);
 
         new Thread(new ClientThread()).start();
-        new Thread(new AudioThread()).start();
+        //new Thread(new AudioThread()).start();
+        new Thread(new TwitterThread()).start();
     }
 
 
@@ -137,5 +147,29 @@ public class MainActivity extends ActionBarActivity {
         }
     }
 
+    class TwitterThread implements Runnable {
 
+        @Override
+        public void run(){
+            //config setup
+            ConfigurationBuilder cb = new ConfigurationBuilder();
+            cb.setDebugEnabled(true)
+                    .setOAuthConsumerKey("**")
+                    .setOAuthConsumerSecret("**")
+                    .setOAuthAccessToken("**")
+                    .setOAuthAccessTokenSecret("**")
+                    .setUseSSL(true);
+            TwitterFactory tf = new TwitterFactory(cb.build());
+            Twitter twitter = tf.getInstance();
+            //and tweet
+
+            try {
+                Status status = twitter.updateStatus("@jgiesler your laundry is done");
+            } catch (TwitterException e) {
+                e.printStackTrace();
+            }
+
+
+        }
+    }
 }

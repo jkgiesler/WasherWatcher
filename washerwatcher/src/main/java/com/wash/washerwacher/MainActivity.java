@@ -36,7 +36,7 @@ public class MainActivity extends ActionBarActivity implements SensorEventListen
     private boolean mInitialized;
     private SensorManager mSensorManager;
     private Sensor mAccelerometer;
-    private final float NOISE = (float)2.0; //for accelerometer
+    private final float NOISE = (float).5; //for accelerometer
     private static final int portNumber = 5544; //for network
     private static final String hostName = "192.168.1.113"; //for network
 
@@ -84,11 +84,12 @@ public class MainActivity extends ActionBarActivity implements SensorEventListen
         super.onStop();
         Thread.currentThread().interrupt();
     }
+    @Override
     public void onResume(){
         super.onResume();
         mSensorManager.registerListener(this,mAccelerometer,SensorManager.SENSOR_DELAY_NORMAL);
     }
-
+    @Override
     public void onPause(){
         super.onPause();
         //mSensorManager.unregisterListener(this);

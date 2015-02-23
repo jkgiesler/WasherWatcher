@@ -1,4 +1,4 @@
 WasherWatcher
 =============
 
-Washing app android
+Playing around with android sensors and twitter.
